@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 super.run();
-                String str_url = "https://www.google.com.tw";
+                String str_url = "http://rate.bot.com.tw/xrt?Lang=zh-TW";
                 URL url = null;
                 try {
                     url = new URL(str_url);
@@ -37,8 +37,21 @@ public class MainActivity extends AppCompatActivity {
                     InputStream inputStream = conn.getInputStream();
                     InputStreamReader isr = new InputStreamReader(inputStream);
                     BufferedReader br = new BufferedReader(isr);
-                    String str = br.readLine();
-                    Log.d("NET", str);
+                    StringBuilder sb = new StringBuilder();
+                    String str;
+
+                    while ((str = br.readLine()) != null)
+                    {
+                        sb.append(str);
+                    }
+                    String str1 = sb.toString();
+                    Log.d("NET", str1);
+                    int index1 = str1.indexOf("日圓 (JPY)");
+                    int index2 = str1.indexOf("本行現金賣出", index1);
+                    int index3 = str1.indexOf("0.266", index2);
+                    Log.d("NET", "index1:" + index1 + "index2:" + index2 + "index3:" + index3);
+                    String data1 = str1.substring(index2+56, index2+61);
+                    Log.d("NET", data1);
                     br.close();
                     isr.close();
                     inputStream.close();
