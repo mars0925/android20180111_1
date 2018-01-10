@@ -5,14 +5,23 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,7 +55,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                     String str1 = sb.toString();
                     Log.d("NET", str1);
-
+                    final MyHandler dataHandler = new MyHandler();
+                    SAXParserFactory spf = SAXParserFactory.newInstance();
+                    SAXParser sp = spf.newSAXParser();
+                    XMLReader xr = sp.getXMLReader();
+                    xr.setContentHandler(dataHandler);
+                    xr.parse(new InputSource(new StringReader(str1)));
 
                     br.close();
                     isr.close();
@@ -56,6 +70,10 @@ public class MainActivity extends AppCompatActivity {
                 } catch (ProtocolException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (SAXException e) {
+                    e.printStackTrace();
+                } catch (ParserConfigurationException e) {
                     e.printStackTrace();
                 }
 
