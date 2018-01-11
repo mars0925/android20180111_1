@@ -16,8 +16,11 @@ public class MyHandler extends DefaultHandler {
     //用布林陣列定位item 以及title
     boolean isTitle = false;
     boolean isItem = false;
+    boolean islink = false;
+    StringBuilder linkSB = new StringBuilder();
     //用Arraylsit放抓下來的標題
     public ArrayList<String> titles = new ArrayList<>();
+    public ArrayList<String> links = new ArrayList<>();
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -33,6 +36,10 @@ public class MyHandler extends DefaultHandler {
         {
             isItem = true;
         }
+        if (qName.equals("link"))
+        {
+            islink = true;
+        }
     }
 
     @Override
@@ -47,6 +54,17 @@ public class MyHandler extends DefaultHandler {
         {
             isItem = false;
         }
+        if (qName.equals("link"))
+        {
+            islink = false;
+            //Mobile01 本站新聞最上面的title也有link ,所以要檢查 是Item裡面的link才要加
+            if (isItem)
+            {
+                links.add(linkSB.toString());
+                linkSB = new StringBuilder();
+            }
+
+        }
     }
 
     @Override
@@ -57,6 +75,10 @@ public class MyHandler extends DefaultHandler {
         {
             Log.d("NET", new String(ch, start, length));
             titles.add(new String(ch,start,length));
+        }
+        if (islink && isItem)
+        {
+            linkSB.append(new String(ch,start,length));
         }
 
     }

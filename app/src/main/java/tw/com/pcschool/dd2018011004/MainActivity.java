@@ -1,9 +1,13 @@
 package tw.com.pcschool.dd2018011004;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -28,39 +32,60 @@ import javax.xml.parsers.SAXParserFactory;
 public class MainActivity extends AppCompatActivity {
     ListView lv;
     ArrayAdapter<String> adapter;
+    MyHandler dataHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         lv = (ListView)findViewById(R.id.listView);
-    }
-    public void click1(View v)
-    {
-        new Thread(){
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void run() {
-                super.run();
-                String str_url = "https://www.mobile01.com/rss/news.xml";
-                URL url = null;
-                try {
-                    url = new URL(str_url);
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("GET");
-                    conn.connect();
-                    InputStream inputStream = conn.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(inputStream);
-                    BufferedReader br = new BufferedReader(isr);
-                    StringBuilder sb = new StringBuilder();
-                    String str;
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent it = new Intent(MainActivity.this,webviewActivity.class);
+                it.putExtra("link",dataHandler.links.get(i));
+                startActivity(it);
+            }
+        });
+    }
 
-                    while ((str = br.readLine()) != null)
-                    {
-                        sb.append(str);
-                    }
-                    String str1 = sb.toString();
-                    Log.d("NET", str1);
-                    final MyHandler dataHandler = new MyHandler();
-                    // SAX 來解析 XML 格式文件
+    @Override
+    //
+    //建立menu裝自訂的menu 建立前要先建立menu資料夾以及檔案
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+    //按下menu item 下載網路資料
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case  R.id.menu_reload:
+                new Thread(){
+                @Override
+                public void run() {
+                    super.run();
+                    String str_url = "https://www.mobile01.com/rss/news.xml";
+                    URL url = null;
+                    try {
+                        url = new URL(str_url);
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setRequestMethod("GET");
+                        conn.connect();
+                        InputStream inputStream = conn.getInputStream();
+                        InputStreamReader isr = new InputStreamReader(inputStream);
+                        BufferedReader br = new BufferedReader(isr);
+                        StringBuilder sb = new StringBuilder();
+                        String str;
+
+                        while ((str = br.readLine()) != null)
+                        {
+                            sb.append(str);
+                        }
+                        String str1 = sb.toString();
+                        Log.d("NET", str1);
+                        dataHandler = new MyHandler();
+                        // SAX 來解析 XML 格式文件
                     /*
                     故使用第二種方法. 在解析之前我們還必須定義一個類別或 Handler (DataHandler).
                     用來當作 XMLReader 的回呼函式. 在回呼函式中每當 Parser 解析完一個 Document
@@ -68,44 +93,49 @@ public class MainActivity extends AppCompatActivity {
                      通知我們進行處理, 這時我們便可以取出有興趣的 Element
                      並過濾掉不需要的 Element. 而該類別或 Handler 需繼承 DefaultHandler 類別.
                      */
-                    //* 產生SAXParser物件 */
-                    SAXParserFactory spf = SAXParserFactory.newInstance();
+                        //* 產生SAXParser物件 */
+                        SAXParserFactory spf = SAXParserFactory.newInstance();
 
-                    SAXParser sp = spf.newSAXParser();
+                        SAXParser sp = spf.newSAXParser();
                     /* 產生XMLReader物件 */
-                    XMLReader xr = sp.getXMLReader();
+                        XMLReader xr = sp.getXMLReader();
                      /* 設定自定義的MyHandler給XMLReader */
-                    xr.setContentHandler(dataHandler);
+                        xr.setContentHandler(dataHandler);
                      /* 解析XML */
-                    xr.parse(new InputSource(new StringReader(str1)));
+                        xr.parse(new InputSource(new StringReader(str1)));
 
-                    br.close();
-                    isr.close();
-                    inputStream.close();
-                    //這裡面都是在 Thread()裡面跑 如果要再讓主執行緒的UI動要用runOnUiThread()
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            //Arraylist內容是dataHandler.titles 才抓的到
-                            adapter = new ArrayAdapter<String>(MainActivity.this,
-                                    android.R.layout.simple_list_item_1,
-                                    dataHandler.titles);
-                            lv.setAdapter(adapter);
-                        }
-                    });
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (ProtocolException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (SAXException e) {
-                    e.printStackTrace();
-                } catch (ParserConfigurationException e) {
-                    e.printStackTrace();
+                        br.close();
+                        isr.close();
+                        inputStream.close();
+                        //這裡面都是在 Thread()裡面跑 如果要再讓主執行緒的UI動要用runOnUiThread()
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //Arraylist內容是dataHandler.titles 才抓的到
+                                adapter = new ArrayAdapter<String>(MainActivity.this,
+                                        android.R.layout.simple_list_item_1,
+                                        dataHandler.titles);
+                                lv.setAdapter(adapter);
+                            }
+                        });
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (ProtocolException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (SAXException e) {
+                        e.printStackTrace();
+                    } catch (ParserConfigurationException e) {
+                        e.printStackTrace();
+                    }
+
                 }
-
-            }
-        }.start();
+            }.start();
+             break;
+        }
+        return super.onOptionsItemSelected(item);
     }
+
+
 }
