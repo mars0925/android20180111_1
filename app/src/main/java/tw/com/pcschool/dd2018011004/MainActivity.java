@@ -31,7 +31,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 public class MainActivity extends AppCompatActivity {
     ListView lv;
-    ArrayAdapter<String> adapter;
+    Myadapte adapter;
+
     //MyHandler dataHandler;改在這裡宣告才能被onItemClick裡面抓到
     MyHandler dataHandler;
     @Override
@@ -40,11 +41,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         lv = (ListView)findViewById(R.id.listView);
         //listview設OnItemClickListener 當點選時送出intente給webactivity那一頁
+
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent it = new Intent(MainActivity.this,webviewActivity.class);
-                it.putExtra("link",dataHandler.links.get(i));
+                it.putExtra("link",dataHandler.newsItems.get(i).link);
                 startActivity(it);
             }
         });
@@ -89,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
                         dataHandler = new MyHandler();
                         // SAX 來解析 XML 格式文件
                     /*
-                    故使用第二種方法. 在解析之前我們還必須定義一個類別或 Handler (DataHandler).
+                   在解析之前我們還必須定義一個類別或 Handler (DataHandler).
                     用來當作 XMLReader 的回呼函式. 在回呼函式中每當 Parser 解析完一個 Document
                      或 Element 便會透過對應的回呼函式 ( startElement() , endElement() etc )
                      通知我們進行處理, 這時我們便可以取出有興趣的 Element
@@ -113,10 +115,17 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                //Arraylist內容是dataHandler.titles 才抓的到
-                                adapter = new ArrayAdapter<String>(MainActivity.this,
-                                        android.R.layout.simple_list_item_1,
-                                        dataHandler.titles);
+
+                                String data[] = new String[dataHandler.newsItems.size()];
+                                //用迴圈把裝Mobile01news物件的ArrayList的資料叫出來
+                                for(int i = 0; i<data.length;i++)
+                                {
+                                    data[i]=dataHandler.newsItems.get(i).title;
+                                }
+
+
+                                adapter =  new Myadapte(MainActivity.this,dataHandler.newsItems);
+
                                 lv.setAdapter(adapter);
                             }
                         });
