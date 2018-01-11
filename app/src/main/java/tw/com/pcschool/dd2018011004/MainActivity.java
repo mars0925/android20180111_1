@@ -32,12 +32,14 @@ import javax.xml.parsers.SAXParserFactory;
 public class MainActivity extends AppCompatActivity {
     ListView lv;
     ArrayAdapter<String> adapter;
+    //MyHandler dataHandler;改在這裡宣告才能被onItemClick裡面抓到
     MyHandler dataHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         lv = (ListView)findViewById(R.id.listView);
+        //listview設OnItemClickListener 當點選時送出intente給webactivity那一頁
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
