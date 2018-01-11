@@ -4,6 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -24,11 +26,13 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 public class MainActivity extends AppCompatActivity {
-
+    ListView lv;
+    ArrayAdapter<String> adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        lv = (ListView)findViewById(R.id.listView);
     }
     public void click1(View v)
     {
@@ -56,15 +60,39 @@ public class MainActivity extends AppCompatActivity {
                     String str1 = sb.toString();
                     Log.d("NET", str1);
                     final MyHandler dataHandler = new MyHandler();
+                    // SAX 來解析 XML 格式文件
+                    /*
+                    故使用第二種方法. 在解析之前我們還必須定義一個類別或 Handler (DataHandler).
+                    用來當作 XMLReader 的回呼函式. 在回呼函式中每當 Parser 解析完一個 Document
+                     或 Element 便會透過對應的回呼函式 ( startElement() , endElement() etc )
+                     通知我們進行處理, 這時我們便可以取出有興趣的 Element
+                     並過濾掉不需要的 Element. 而該類別或 Handler 需繼承 DefaultHandler 類別.
+                     */
+                    //* 產生SAXParser物件 */
                     SAXParserFactory spf = SAXParserFactory.newInstance();
+
                     SAXParser sp = spf.newSAXParser();
+                    /* 產生XMLReader物件 */
                     XMLReader xr = sp.getXMLReader();
+                     /* 設定自定義的MyHandler給XMLReader */
                     xr.setContentHandler(dataHandler);
+                     /* 解析XML */
                     xr.parse(new InputSource(new StringReader(str1)));
 
                     br.close();
                     isr.close();
                     inputStream.close();
+                    //這裡面都是在 Thread()裡面跑 如果要再讓主執行緒的UI動要用runOnUiThread()
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //Arraylist內容是dataHandler.titles 才抓的到
+                            adapter = new ArrayAdapter<String>(MainActivity.this,
+                                    android.R.layout.simple_list_item_1,
+                                    dataHandler.titles);
+                            lv.setAdapter(adapter);
+                        }
+                    });
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 } catch (ProtocolException e) {
